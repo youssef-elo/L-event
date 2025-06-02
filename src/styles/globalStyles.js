@@ -2,7 +2,8 @@
 import { Platform } from 'react-native';
 
 export const Colors = {
-  primary: '#1a73e8',
+  primary: '#1987B5',
+  primaryDark: '#0C3A61',
   secondary: '#f8f9fa',
   background: '#f8f9fa',
   white: '#ffffff',
@@ -12,6 +13,14 @@ export const Colors = {
   textMuted: '#999999',
   border: '#e0e0e0',
   shadow: '#000000',
+  success: '#4CAF50',
+  error: '#F44336',
+  warning: '#FF8C00',
+  lightGray: '#f5f5f5',
+  lightBlue: '#F0F8FF',
+  // Profile gradient colors from SVG
+  gradientStart: '#1987B5',
+  gradientEnd: '#0C3A61',
 };
 
 export const Fonts = {

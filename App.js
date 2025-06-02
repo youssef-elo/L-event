@@ -5,15 +5,20 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Font from 'expo-font';
 import { View, Text, StyleSheet, Platform } from 'react-native';
 
+import { UserProvider, useUser } from './src/context/UserContext';
+import { EventProvider } from './src/context/EventContext';
 import LoginScreen from './src/screens/LoginScreen';
 import EventsScreen from './src/screens/EventsScreen';
 import VolunteeringScreen from './src/screens/VolunteeringScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
+import AdminScreen from './src/screens/AdminScreen';
 import { Colors } from './src/styles/globalStyles';
 
 const Tab = createBottomTabNavigator();
 
 function TabNavigator() {
+  const { isAdmin } = useUser();
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -26,6 +31,8 @@ function TabNavigator() {
             iconName = focused ? 'heart' : 'heart-outline';
           } else if (route.name === 'Profile') {
             iconName = focused ? 'person' : 'person-outline';
+          } else if (route.name === 'Admin') {
+            iconName = focused ? 'settings' : 'settings-outline';
           }
 
           return <Ionicons name={iconName} size={size} color={color} />;
@@ -47,13 +54,33 @@ function TabNavigator() {
         options={{ headerShown: false }}
       />
       <Tab.Screen name="Volunteering" component={VolunteeringScreen} />
-      <Tab.Screen name="Profile" component={ProfileScreen} />
+      <Tab.Screen 
+        name="Profile" 
+        component={ProfileScreen} 
+        options={{ headerShown: false }}
+      />
+      {isAdmin() && (
+        <Tab.Screen 
+          name="Admin" 
+          component={AdminScreen} 
+          options={{ 
+            headerShown: false,
+            tabBarIcon: ({ focused, color, size }) => (
+              <Ionicons 
+                name={focused ? 'settings' : 'settings-outline'} 
+                size={size} 
+                color={color} 
+              />
+            )
+          }}
+        />
+      )}
     </Tab.Navigator>
   );
 }
 
-export default function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+function AppContent() {
+  const { isAuthenticated, isLoading } = useUser();
   const [fontsLoaded, setFontsLoaded] = useState(false);
 
   useEffect(() => {
@@ -82,11 +109,7 @@ export default function App() {
     loadFonts();
   }, []);
 
-  const handleLogin = () => {
-    setIsLoggedIn(true);
-  };
-
-  if (!fontsLoaded) {
+  if (!fontsLoaded || isLoading) {
     return (
       <View style={styles.loadingContainer}>
         <Text style={styles.loadingText}>Loading...</Text>
@@ -96,12 +119,22 @@ export default function App() {
 
   return (
     <NavigationContainer>
-      {isLoggedIn ? (
+      {isAuthenticated ? (
         <TabNavigator />
       ) : (
-        <LoginScreen onLogin={handleLogin} />
+        <LoginScreen />
       )}
     </NavigationContainer>
+  );
+}
+
+export default function App() {
+  return (
+    <UserProvider>
+      <EventProvider>
+        <AppContent />
+      </EventProvider>
+    </UserProvider>
   );
 }
 

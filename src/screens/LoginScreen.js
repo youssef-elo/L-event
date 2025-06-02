@@ -9,11 +9,14 @@ import {
   Platform,
   ScrollView,
   Dimensions,
+  Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SvgXml } from 'react-native-svg';
 import { Colors, Fonts, Spacing, BorderRadius, Shadows } from '../styles/globalStyles';
+import { useUser } from '../context/UserContext';
 
 // Simplified SVG without complex filters for better React Native compatibility
 const logoSvg = `<svg width="286" height="56" viewBox="0 0 286 56" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -23,8 +26,10 @@ const logoSvg = `<svg width="286" height="56" viewBox="0 0 286 56" fill="none" x
 </svg>`;
 
 export default function LoginScreen({ onLogin }) {
+  const { login, isLoading } = useUser();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading42, setIsLoading42] = useState(false);
   
   // Get screen dimensions
   const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
@@ -59,9 +64,33 @@ export default function LoginScreen({ onLogin }) {
     onLogin();
   };
 
-  const handle42Auth = () => {
-    // Placeholder for 42 authentication
-    onLogin();
+  const handle42Auth = async () => {
+    setIsLoading42(true);
+    
+    try {
+      const result = await login();
+      
+      if (result.success) {
+        // Login successful - user context will handle navigation
+        console.log('42 Authentication successful');
+      } else {
+        // Show error message
+        Alert.alert(
+          'Authentication Failed',
+          result.error || 'Failed to authenticate with 42. Please try again.',
+          [{ text: 'OK' }]
+        );
+      }
+    } catch (error) {
+      console.error('42 Auth Error:', error);
+      Alert.alert(
+        'Error',
+        'An unexpected error occurred. Please try again.',
+        [{ text: 'OK' }]
+      );
+    } finally {
+      setIsLoading42(false);
+    }
   };
 
   return (
@@ -101,18 +130,33 @@ export default function LoginScreen({ onLogin }) {
               marginTop: responsiveSizes.inputMargin
             }]}>Student</Text>
             
-            <TouchableOpacity style={[styles.authButton, { 
-              marginTop: responsiveSizes.inputMargin,
-              marginBottom: responsiveSizes.buttonMargin,
-              borderRadius: responsiveSizes.borderRadius
-            }]} onPress={handle42Auth}>
+            <TouchableOpacity 
+              style={[styles.authButton, { 
+                marginTop: responsiveSizes.inputMargin,
+                marginBottom: responsiveSizes.buttonMargin,
+                borderRadius: responsiveSizes.borderRadius
+              }]} 
+              onPress={handle42Auth}
+              disabled={isLoading42}
+            >
               <LinearGradient
-                colors={['#4DA2D9', '#15397E']}
+                colors={isLoading42 ? ['#9CA3AF', '#6B7280'] : ['#4DA2D9', '#15397E']}
                 style={[styles.buttonGradient, { padding: responsiveSizes.buttonPadding }]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
               >
-                <Text style={[styles.authButtonText, { fontSize: responsiveSizes.buttonTextSize }]}>Authenticate with 42</Text>
+                {isLoading42 ? (
+                  <View style={styles.loadingContainer}>
+                    <ActivityIndicator color={Colors.white} size="small" />
+                    <Text style={[styles.authButtonText, { fontSize: responsiveSizes.buttonTextSize, marginLeft: 8 }]}>
+                      Authenticating...
+                    </Text>
+                  </View>
+                ) : (
+                  <Text style={[styles.authButtonText, { fontSize: responsiveSizes.buttonTextSize }]}>
+                    Authenticate with 42
+                  </Text>
+                )}
               </LinearGradient>
             </TouchableOpacity>
 
@@ -223,6 +267,11 @@ const styles = StyleSheet.create({
   authButton: {
     overflow: 'hidden',
     ...Shadows.light,
+  },
+  loadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   signInButton: {
     overflow: 'hidden',
