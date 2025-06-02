@@ -21,7 +21,9 @@
         "foregroundImage": "./assets/app-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.levent.app",
+      "versionCode": 1
     },
     "web": {
       "favicon": "./assets/favicon.png"

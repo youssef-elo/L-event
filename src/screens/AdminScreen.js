@@ -35,18 +35,16 @@ export default function AdminScreen() {
     refreshEvents 
   } = useEvents();
   
-  // For now, use empty arrays for volunteer requests until they're implemented
   const allVolunteerRequests = [];
   const userVolunteerRequests = [];
   
-  const [activeTab, setActiveTab] = useState('all'); // 'all' or 'my'
+  const [activeTab, setActiveTab] = useState('all'); 
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
-  const [modalMode, setModalMode] = useState('create'); // 'create', 'edit'
-  const [eventType, setEventType] = useState('regular'); // 'regular', 'volunteer'
+  const [modalMode, setModalMode] = useState('create'); 
+  const [eventType, setEventType] = useState('regular'); 
   const [refreshing, setRefreshing] = useState(false);
 
-  // Get the appropriate events based on active tab
   const displayEvents = activeTab === 'all' ? allEvents : userEvents;
   const displayVolunteerRequests = activeTab === 'all' ? allVolunteerRequests : userVolunteerRequests;
 
@@ -64,7 +62,6 @@ export default function AdminScreen() {
     setModalVisible(true);
   };
 
-  // Handle refresh
   const handleRefresh = async () => {
     setRefreshing(true);
     await refreshEvents();
@@ -111,8 +108,6 @@ export default function AdminScreen() {
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
-      
-      {/* Header */}
       <LinearGradient
         colors={['#1987B5', '#0C3A61']}
         start={{ x: 0, y: 0 }}
@@ -129,7 +124,6 @@ export default function AdminScreen() {
         </SafeAreaView>
       </LinearGradient>
 
-      {/* Create Event Buttons */}
       <View style={styles.createButtonsContainer}>
         <TouchableOpacity 
           style={styles.createButton}
@@ -162,7 +156,6 @@ export default function AdminScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Tab Switch */}
       <View style={styles.tabContainer}>
         <TouchableOpacity
           style={styles.tab}
@@ -185,7 +178,6 @@ export default function AdminScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Events List */}
       <ScrollView 
         style={styles.content} 
         showsVerticalScrollIndicator={false}
@@ -228,7 +220,6 @@ export default function AdminScreen() {
         </View>
       </ScrollView>
 
-      {/* Admin Event Modal */}
       <AdminEventModal
         visible={modalVisible}
         event={selectedEvent}

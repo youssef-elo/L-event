@@ -19,13 +19,11 @@ import * as ImagePicker from 'expo-image-picker';
 import { Colors, Fonts, Spacing, Shadows } from '../styles/globalStyles';
 import FirebaseService from '../services/FirebaseService';
 
-// Valid months for validation
 const VALID_MONTHS = [
   'JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',
   'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'
 ];
 
-// Days in each month (non-leap year)
 const DAYS_IN_MONTH = {
   'JAN': 31, 'FEB': 28, 'MAR': 31, 'APR': 30, 'MAY': 31, 'JUN': 30,
   'JUL': 31, 'AUG': 31, 'SEP': 30, 'OCT': 31, 'NOV': 30, 'DEC': 31
@@ -33,7 +31,6 @@ const DAYS_IN_MONTH = {
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
-// Event categories for dropdown selection
 const EVENT_CATEGORIES = [
   'School Event',
   'Club Event'
@@ -52,8 +49,7 @@ export default function AdminEventModal({ visible, event, mode, eventType, onClo
     location: '',
     total: '',
     description: '',
-    imageUri: null, // Changed to URI for selected image
-    // Volunteer-specific fields
+    imageUri: null,
     reward: '',
     volunteerDate: '',
     volunteerMonth: '',
@@ -66,10 +62,8 @@ export default function AdminEventModal({ visible, event, mode, eventType, onClo
 
   const [focusedInput, setFocusedInput] = useState(null);
 
-  // Initialize form with event data when editing
   useEffect(() => {
     if (mode === 'edit' && event) {
-      // Parse existing time format if it exists
       let startTime = '9', startPeriod = 'AM', endTime = '', endPeriod = 'PM';
       if (event.time) {
         const timeMatch = event.time.match(/(\d{1,2}):?\d*\s*(AM|PM)\s*-?\s*(\d{1,2})?:?\d*\s*(AM|PM)?/i);
@@ -94,7 +88,6 @@ export default function AdminEventModal({ visible, event, mode, eventType, onClo
         total: event.total?.toString() || '',
         description: event.description || '',
         imageUri: event.imageUri || null,
-        // Volunteer-specific fields
         reward: event.reward || '',
         volunteerDate: event.volunteerDate || event.startDate || '',
         volunteerMonth: event.volunteerMonth || event.startMonth || '',
@@ -105,7 +98,6 @@ export default function AdminEventModal({ visible, event, mode, eventType, onClo
         volunteersNeeded: event.volunteersNeeded?.toString() || '',
       });
     } else if (mode === 'create') {
-      // Reset form for new event
       setFormData({
         title: '',
         category: eventType === 'volunteer' ? 'Club Event' : 'School Event',
@@ -119,7 +111,6 @@ export default function AdminEventModal({ visible, event, mode, eventType, onClo
         total: '',
         description: '',
         imageUri: null,
-        // Volunteer-specific fields
         reward: '',
         volunteerDate: '',
         volunteerMonth: '',
@@ -140,7 +131,6 @@ export default function AdminEventModal({ visible, event, mode, eventType, onClo
   };
 
   const pickImage = async () => {
-    // Request permissions
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
     
     if (permissionResult.granted === false) {
@@ -164,12 +154,10 @@ export default function AdminEventModal({ visible, event, mode, eventType, onClo
     const day = parseInt(date);
     const monthUpper = month.toUpperCase();
 
-    // Check if month is valid
     if (!VALID_MONTHS.includes(monthUpper)) {
       return { isValid: false, error: 'Invalid month. Please use JAN, FEB, MAR, etc.' };
     }
 
-    // Check if day is valid for the month
     const maxDays = DAYS_IN_MONTH[monthUpper];
     if (day < 1 || day > maxDays) {
       return { isValid: false, error: `Day must be between 1 and ${maxDays} for ${monthUpper}` };
@@ -179,20 +167,17 @@ export default function AdminEventModal({ visible, event, mode, eventType, onClo
   };
 
   const validateTime = (startTime, startPeriod, endTime, endPeriod) => {
-    // Validate start time
     const startHour = parseInt(startTime);
     if (isNaN(startHour) || startHour < 1 || startHour > 12) {
       return { isValid: false, error: 'Start time must be between 1 and 12' };
     }
 
-    // If end time is provided, validate it
     if (endTime.trim()) {
       const endHour = parseInt(endTime);
       if (isNaN(endHour) || endHour < 1 || endHour > 12) {
         return { isValid: false, error: 'End time must be between 1 and 12' };
       }
 
-      // Convert to 24-hour format for comparison
       let start24 = startHour === 12 ? 0 : startHour;
       if (startPeriod === 'PM') start24 += 12;
 
@@ -210,14 +195,12 @@ export default function AdminEventModal({ visible, event, mode, eventType, onClo
   const validateForm = () => {
     const { title, date, month, startTime, startPeriod, endTime, endPeriod, location, total, description, reward, volunteerDate, volunteerMonth, startHour, startHourPeriod, endHour, endHourPeriod, volunteersNeeded } = formData;
     
-    // Check required fields
     if (!title.trim()) {
       Alert.alert('Validation Error', 'Event title is required');
       return false;
     }
 
     if (eventType === 'volunteer') {
-      // Volunteer event validation
       if (!reward.trim()) {
         Alert.alert('Validation Error', 'Reward is required for volunteer events');
         return false;
@@ -243,21 +226,18 @@ export default function AdminEventModal({ visible, event, mode, eventType, onClo
         return false;
       }
 
-      // Validate volunteer date and month
       const dateValidation = validateDate(volunteerDate, volunteerMonth);
       if (!dateValidation.isValid) {
         Alert.alert('Validation Error', dateValidation.error);
         return false;
       }
 
-      // Validate hour range
       const timeValidation = validateTime(startHour, startHourPeriod, endHour, endHourPeriod);
       if (!timeValidation.isValid) {
         Alert.alert('Validation Error', timeValidation.error);
         return false;
       }
     } else {
-      // Regular event validation
       if (!date.trim()) {
         Alert.alert('Validation Error', 'Event date is required');
         return false;
@@ -283,14 +263,12 @@ export default function AdminEventModal({ visible, event, mode, eventType, onClo
         return false;
       }
 
-      // Validate date and month
       const dateValidation = validateDate(date, month);
       if (!dateValidation.isValid) {
         Alert.alert('Validation Error', dateValidation.error);
         return false;
       }
 
-      // Validate time format
       const timeValidation = validateTime(startTime, startPeriod, endTime, endPeriod);
       if (!timeValidation.isValid) {
         Alert.alert('Validation Error', timeValidation.error);
@@ -311,7 +289,6 @@ export default function AdminEventModal({ visible, event, mode, eventType, onClo
       };
 
       if (eventType === 'volunteer') {
-        // Volunteer event data structure (no image fields)
         eventData = {
           title: formData.title,
           category: formData.category,
@@ -325,21 +302,16 @@ export default function AdminEventModal({ visible, event, mode, eventType, onClo
           volunteersNeeded: parseInt(formData.volunteersNeeded),
           booked: mode === 'edit' ? event.booked : 0,
           type: eventType,
-          // Use volunteer date/month for display purposes
           date: formData.volunteerDate,
           month: formData.volunteerMonth,
-          // Set time string for display
           time: `${formData.startHour}:00 ${formData.startHourPeriod} - ${formData.endHour}:00 ${formData.endHourPeriod}`,
           location: 'Various Locations',
           total: parseInt(formData.volunteersNeeded),
           description: `Volunteer opportunity: ${formData.title}. Reward: ${formData.reward} points. Date: ${formData.volunteerDate} ${formData.volunteerMonth}`,
-          // Default image for volunteer events
           imageSource: require('../../assets/default.png'),
           imageUri: null,
         };
       } else {
-        // Regular event data structure
-        // Format time string
         let timeString = `${formData.startTime}:00 ${formData.startPeriod}`;
         if (formData.endTime.trim()) {
           timeString += ` - ${formData.endTime}:00 ${formData.endPeriod}`;
@@ -354,16 +326,13 @@ export default function AdminEventModal({ visible, event, mode, eventType, onClo
         };
       }
 
-      // Handle image upload only for regular events
       if (eventType !== 'volunteer' && formData.imageUri && formData.imageUri.startsWith('file://')) {
         try {
-          // Debug environment variables before upload
           console.log('=== DEBUG: Environment Variables ===');
           console.log('EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME:', process.env.EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME);
           console.log('EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET:', process.env.EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET);
           console.log('========================================');
           
-          // Upload image to Cloudinary
           console.log('Starting image upload process...');
           const uploadResult = await FirebaseService.uploadImageToCloudinary(
             formData.imageUri,
@@ -376,7 +345,6 @@ export default function AdminEventModal({ visible, event, mode, eventType, onClo
             console.log('Image uploaded successfully to Cloudinary:', uploadResult.cloudinaryURL);
           } else {
             console.log('FormData upload failed, trying base64 method...');
-            // Try alternative base64 upload method
             const base64UploadResult = await FirebaseService.uploadImageToCloudinaryBase64(
               formData.imageUri,
               'events'
@@ -393,11 +361,9 @@ export default function AdminEventModal({ visible, event, mode, eventType, onClo
         } catch (error) {
           console.error('Image upload failed:', error);
           
-          // Use default image as fallback
           eventData.imageSource = require('../../assets/default.png');
           eventData.imageUri = null;
           
-          // Show error message after setting fallback
           setTimeout(() => {
             Alert.alert(
               'Upload Notice',
@@ -407,13 +373,10 @@ export default function AdminEventModal({ visible, event, mode, eventType, onClo
           }, 100);
         }
       } else if (eventType !== 'volunteer') {
-        // Handle existing images only for regular events
         if (formData.imageUri && formData.imageUri.startsWith('https://')) {
-          // Existing Cloudinary URL
           eventData.imageSource = { uri: formData.imageUri };
           eventData.imageUri = formData.imageUri;
         } else {
-          // No image or default image
           eventData.imageSource = require('../../assets/default.png');
           eventData.imageUri = null;
         }
@@ -473,7 +436,6 @@ export default function AdminEventModal({ visible, event, mode, eventType, onClo
     const periods = ['AM', 'PM'];
 
     const handleTimeChange = (value) => {
-      // Only allow numbers and limit to 1-12
       const numericValue = value.replace(/[^0-9]/g, '');
       if (numericValue === '' || (parseInt(numericValue) >= 1 && parseInt(numericValue) <= 12)) {
         onTimeChange(numericValue);
@@ -487,7 +449,6 @@ export default function AdminEventModal({ visible, event, mode, eventType, onClo
           {isRequired && <Text style={styles.requiredAsterisk}>*</Text>}
         </View>
         <View style={styles.timeInputRow}>
-          {/* Hour Selection */}
           <View style={styles.timeInputContainer}>
             <TextInput
               style={[
@@ -506,7 +467,6 @@ export default function AdminEventModal({ visible, event, mode, eventType, onClo
             <Text style={styles.timeInputLabel}>Hour</Text>
           </View>
 
-          {/* Period Selection Buttons */}
           <View style={styles.periodButtonsContainer}>
             <TouchableOpacity
               style={[
@@ -553,7 +513,6 @@ export default function AdminEventModal({ visible, event, mode, eventType, onClo
     >
       <StatusBar style="light" />
       <View style={styles.container}>
-        {/* Header */}
         <LinearGradient
           colors={['#1987B5', '#0C3A61']}
           start={{ x: 0, y: 0 }}
@@ -562,7 +521,6 @@ export default function AdminEventModal({ visible, event, mode, eventType, onClo
         >
           <SafeAreaView>
             <View style={styles.headerContent}>
-              {/* Close button positioned at top right */}
               <TouchableOpacity style={styles.closeButton} onPress={onClose}>
                 <MaterialIcons name="close" size={28} color={Colors.white} />
               </TouchableOpacity>
@@ -584,10 +542,8 @@ export default function AdminEventModal({ visible, event, mode, eventType, onClo
           </SafeAreaView>
         </LinearGradient>
 
-        {/* Form Content */}
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
           <View style={styles.formContainer}>
-            {/* Event Image - Only for regular events */}
             {eventType !== 'volunteer' && (
               <View style={styles.inputGroup}>
                 <Text style={styles.inputLabel}>Event Image</Text>
@@ -622,7 +578,6 @@ export default function AdminEventModal({ visible, event, mode, eventType, onClo
               </View>
             )}
 
-            {/* Event Title */}
             <View style={styles.inputGroup}>
               <View style={styles.labelContainer}>
                 <Text style={styles.inputLabel}>
@@ -644,14 +599,10 @@ export default function AdminEventModal({ visible, event, mode, eventType, onClo
               />
             </View>
 
-            {/* Category Selector */}
             <CategorySelector />
 
             {eventType === 'volunteer' ? (
               <>
-                {/* Volunteer-specific fields */}
-                
-                {/* Reward */}
                 <View style={styles.inputGroup}>
                   <View style={styles.labelContainer}>
                     <Text style={styles.inputLabel}>Reward</Text>
@@ -672,7 +623,6 @@ export default function AdminEventModal({ visible, event, mode, eventType, onClo
                   />
                 </View>
 
-                {/* Volunteer Date */}
                 <Text style={styles.sectionTitle}>Volunteer Date</Text>
                 <View style={styles.rowInputGroup}>
                   <View style={[styles.inputGroup, { flex: 1, marginRight: Spacing.sm }]}>
@@ -716,10 +666,8 @@ export default function AdminEventModal({ visible, event, mode, eventType, onClo
                   </View>
                 </View>
 
-                {/* Time Range */}
                 <Text style={styles.sectionTitle}>Time Range</Text>
                 
-                {/* Start Hour */}
                 <TimePickerComponent
                   label="Start Hour"
                   timeValue={formData.startHour}
@@ -729,7 +677,6 @@ export default function AdminEventModal({ visible, event, mode, eventType, onClo
                   isRequired={true}
                 />
 
-                {/* End Hour */}
                 <TimePickerComponent
                   label="End Hour"
                   timeValue={formData.endHour}
@@ -739,7 +686,6 @@ export default function AdminEventModal({ visible, event, mode, eventType, onClo
                   isRequired={true}
                 />
 
-                {/* Number of Volunteers Needed */}
                 <View style={styles.inputGroup}>
                   <View style={styles.labelContainer}>
                     <Text style={styles.inputLabel}>Number of Volunteers Needed</Text>
@@ -762,9 +708,6 @@ export default function AdminEventModal({ visible, event, mode, eventType, onClo
               </>
             ) : (
               <>
-                {/* Regular event fields */}
-                
-                {/* Date and Month */}
                 <View style={styles.rowInputGroup}>
                   <View style={[styles.inputGroup, { flex: 1, marginRight: Spacing.sm }]}>
                     <View style={styles.labelContainer}>
@@ -807,7 +750,6 @@ export default function AdminEventModal({ visible, event, mode, eventType, onClo
                   </View>
                 </View>
 
-                {/* Start Time */}
                 <TimePickerComponent
                   label="Start Time"
                   timeValue={formData.startTime}
@@ -817,7 +759,6 @@ export default function AdminEventModal({ visible, event, mode, eventType, onClo
                   isRequired={true}
                 />
 
-                {/* End Time */}
                 <TimePickerComponent
                   label="End Time"
                   timeValue={formData.endTime}
@@ -828,7 +769,6 @@ export default function AdminEventModal({ visible, event, mode, eventType, onClo
                 />
                 <Text style={styles.helpText}>End time is optional</Text>
 
-                {/* Location */}
                 <View style={styles.inputGroup}>
                   <View style={styles.labelContainer}>
                     <Text style={styles.inputLabel}>Location</Text>
@@ -848,7 +788,6 @@ export default function AdminEventModal({ visible, event, mode, eventType, onClo
                   />
                 </View>
 
-                {/* Total Capacity */}
                 <View style={styles.inputGroup}>
                   <View style={styles.labelContainer}>
                     <Text style={styles.inputLabel}>Total Capacity</Text>
@@ -869,7 +808,6 @@ export default function AdminEventModal({ visible, event, mode, eventType, onClo
                   />
                 </View>
 
-                {/* Description */}
                 <View style={styles.inputGroup}>
                   <View style={styles.labelContainer}>
                     <Text style={styles.inputLabel}>Description</Text>
@@ -897,7 +835,6 @@ export default function AdminEventModal({ visible, event, mode, eventType, onClo
           </View>
         </ScrollView>
 
-        {/* Action Buttons */}
         <View style={styles.buttonContainer}>
           {mode === 'create' ? (
             <TouchableOpacity 
@@ -924,9 +861,7 @@ export default function AdminEventModal({ visible, event, mode, eventType, onClo
               </LinearGradient>
             </TouchableOpacity>
           ) : (
-            // Edit Mode
             eventType === 'volunteer' ? (
-              // Volunteer edit mode - edit and delete buttons
               <View style={styles.editModeButtonContainer}>
                 <TouchableOpacity 
                   style={styles.editButton} 
@@ -977,7 +912,6 @@ export default function AdminEventModal({ visible, event, mode, eventType, onClo
                 </TouchableOpacity>
               </View>
             ) : (
-              // Regular event edit mode - edit and delete buttons
               <View style={styles.editModeButtonContainer}>
                 <TouchableOpacity 
                   style={styles.editButton} 
@@ -1054,7 +988,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-start',
     marginBottom: Spacing.md,
-    marginTop: Spacing.lg, // Add space for close button
+    marginTop: Spacing.lg,
   },
   backButton: {
     width: 44,
@@ -1256,7 +1190,7 @@ const styles = StyleSheet.create({
     ...Shadows.light,
     minHeight: 50,
     textAlign: 'center',
-    width: 70, // Fixed smaller width for 2 digits
+    width: 70,
   },
   timeInputLabel: {
     fontSize: Fonts.sizes.small,
@@ -1270,7 +1204,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: Spacing.sm,
     justifyContent: 'flex-start',
-    paddingTop: 2, // Align with input field top
+    paddingTop: 2,
   },
   periodButton: {
     paddingHorizontal: Spacing.lg,
@@ -1282,7 +1216,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     minWidth: 60,
-    height: 50, // Match input field height
+    height: 50,
     ...Shadows.light,
   },
   periodButtonActive: {

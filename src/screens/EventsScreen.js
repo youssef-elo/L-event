@@ -26,7 +26,6 @@ import EventDetailsModal from '../components/EventDetailsModal';
 
 const { width: screenWidth } = Dimensions.get('window');
 
-// Rating Modal Component
 function RatingModal({ visible, event, onClose, onSubmit }) {
   const [rating, setRating] = useState(0);
   const [feedback, setFeedback] = useState('');
@@ -133,14 +132,12 @@ export default function EventsScreen() {
     fetchEvents();
   }, []);
 
-  // Get subscribed events (events user has registered for)
   const subscribedEvents = events.filter(event => 
     attendedEvents.some(attended => attended.id === event.id)
   );
 
-  // Get events that need feedback (attended events without ratings)
   const eventsNeedingFeedback = subscribedEvents.filter(event => 
-    !event.userRating // Assuming events have a userRating field when rated
+    !event.userRating
   );
 
   const handleEventPress = (event) => {
@@ -159,9 +156,7 @@ export default function EventsScreen() {
   };
 
   const handleRatingSubmit = ({ rating, feedback }) => {
-    // Here you would typically save the rating to your backend
     console.log('Rating submitted:', { event: eventToRate, rating, feedback });
-    // You could update the event in your context or refetch events
   };
 
   const handleRefresh = async () => {
@@ -265,7 +260,6 @@ export default function EventsScreen() {
     <View style={styles.container}>
       <StatusBar style="light" backgroundColor="#1987B5" />
       
-      {/* Header with gradient background */}
       <LinearGradient
         colors={['#1987B5', '#0C3A61']}
         start={{ x: 0, y: 0 }}
@@ -286,14 +280,12 @@ export default function EventsScreen() {
         </View>
       </LinearGradient>
 
-      {/* Tab Navigation */}
       <View style={styles.tabContainer}>
         {renderTabButton('all', 'All Events')}
         {renderTabButton('subscribed', 'Subscribed')}
         {renderTabButton('feedback', 'Feedback')}
       </View>
 
-      {/* Events List */}
       <ScrollView 
         style={styles.eventsContainer} 
         showsVerticalScrollIndicator={false}
@@ -309,14 +301,12 @@ export default function EventsScreen() {
         {renderEventsList()}
       </ScrollView>
 
-      {/* Event Details Modal */}
       <EventDetailsModal
         visible={modalVisible}
         event={selectedEvent}
         onClose={handleCloseModal}
       />
 
-      {/* Rating Modal */}
       <RatingModal
         visible={ratingModalVisible}
         event={eventToRate}
@@ -367,7 +357,6 @@ const styles = StyleSheet.create({
     color: Colors.white,
   },
   walletIcon: {
-    // Icon positioning
   },
   statusText: {
     fontSize: Fonts.sizes.medium,
@@ -375,7 +364,6 @@ const styles = StyleSheet.create({
     fontWeight: Fonts.getFontWeight('medium'),
     color: Colors.white,
   },
-  // Tab Navigation Styles
   tabContainer: {
     flexDirection: 'row',
     marginHorizontal: Spacing.lg,
@@ -467,7 +455,6 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     textAlign: 'center',
   },
-  // Rating Modal Styles
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',

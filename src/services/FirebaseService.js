@@ -321,16 +321,17 @@ class FirebaseService {
     try {
       const eventRef = doc(db, this.EVENTS_COLLECTION, eventId);
       const attendeeField = eventType === 'volunteer' ? 'volunteers' : 'attendees';
-      
+
       await updateDoc(eventRef, {
         [attendeeField]: arrayUnion(userId),
         booked: increment(1),
+        subscribed: arrayUnion(userId), // Add user to subscribed list
         updatedAt: serverTimestamp()
       });
-      
+
       // Also add to user's attended/volunteered events
       await this.addEventToUser(userId, eventId, eventType);
-      
+
       return { success: true };
     } catch (error) {
       console.error('Error booking event:', error);
